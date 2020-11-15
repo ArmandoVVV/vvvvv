@@ -23,6 +23,14 @@ void RE_startGame(gameRef game){
 
 }
 
+void RE_getCoord(gameRef game){
+    printf("\n Enter X: ");
+    scanf("%d", &game->x);
+    printf("\n enter Y: ");
+    scanf("%d", &game->y);
+    printf("\n");
+}
+
 void RE_showBoard(gameRef game){
     for(int i = 0;i < game->boardSize;i++){
         printf("\n");
@@ -72,8 +80,7 @@ void RE_placeToken(gameRef game){
 
 int RE_validCheck(gameRef game){
     int i;
-    int j;
-    if(!game->currentPlayer){    //X turn
+    if(game->currentPlayer == 0){   //X turn
         i = 1;          //right check
         while(game->tokenPosition[game->x][game->y+i] == "O"){
             i++;
@@ -134,7 +141,7 @@ int RE_validCheck(gameRef game){
             return 0;
         }
     }
-    else if(!game->currentPlayer == 0){
+    else if(game->currentPlayer){
         i = 1;          //right check
         while(game->tokenPosition[game->x][game->y+i] == "X"){
             i++;
@@ -195,4 +202,5 @@ int RE_validCheck(gameRef game){
             return 0;
         }
     }
+    return 0;
 }

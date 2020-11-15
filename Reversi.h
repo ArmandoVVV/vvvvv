@@ -20,5 +20,6 @@ void RE_showBoard(gameRef);
 int RE_winnerCheck(gameRef);
 void RE_placeToken(gameRef);
 int RE_validCheck(gameRef);
+void RE_getCoord(gameRef);
 
 #endif //REVERSI_REVERSI_H

@@ -9,12 +9,7 @@ int main() {
     RE_showBoard(game);
 
     while(game->totalTokens < game->boardSize * game->boardSize){
-        printf("\n Enter X: ");
-        scanf("%d", &game->x);
-        printf("\n enter Y: ");
-        scanf("%d", &game->y);
-        printf("\n");
-
+        RE_getCoord(game);
         if(RE_validCheck(game)){
             RE_placeToken(game);
         }
