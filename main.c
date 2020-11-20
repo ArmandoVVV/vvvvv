@@ -8,7 +8,6 @@ int main() {
     directions direction  =malloc(sizeof(struct FlipDirection));
     RE_startGame(game);
     RE_showBoard(game);
-    printf("X turn");
 
     while(game->totalTokens < game->boardSize * game->boardSize){
         RE_getCoord(game);
