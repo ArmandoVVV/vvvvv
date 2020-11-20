@@ -10,8 +10,8 @@ struct Game{
     int boardSize;
     int tokenColor;
     int totalTokens;
-    int y;
-    int x;
+    int column;
+    int row;
 };
 typedef struct Game* gameRef;
 
@@ -34,7 +34,7 @@ void RE_placeToken(gameRef);
 int RE_validCheck(gameRef, directions);
 void RE_getCoord(gameRef);
 void RE_flip(gameRef, directions);
-
+void RE_switchPlayer(gameRef);
 void RE_directionReset(directions);
 
 #endif //REVERSI_REVERSI_H

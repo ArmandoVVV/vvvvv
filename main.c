@@ -14,12 +14,13 @@ int main() {
         if(RE_validCheck(game, direction)){
             RE_placeToken(game);
             RE_flip(game, direction);
+            RE_switchPlayer(game);
         }
         RE_showBoard(game);
         if(game->currentPlayer){
-            printf("O turn   ");
-        }else{
             printf("X turn   ");
+        }else{
+            printf("O turn   ");
         }
         printf("    %d : %d  ", game->totalTokens, game->boardSize * game->boardSize);
 

@@ -5,8 +5,9 @@
 void RE_startGame(gameRef game){
     game->boardSize = 8;
     int size = game->boardSize;
-    game->currentPlayer = 0;
+    game->currentPlayer = 1;
     game->userScore = 0;
+    game->tokenColor = 0;
 
     for(int i = 0; i < size; i++){
         for(int j = 0; j < size; j++){
@@ -22,10 +23,10 @@ void RE_startGame(gameRef game){
 }
 
 void RE_getCoord(gameRef game){
-    printf("\n Enter X: ");
-    scanf("%d", &game->x);
-    printf("\n enter Y: ");
-    scanf("%d", &game->y);
+    printf("\n Enter row: ");
+    scanf("%d", &game->row);
+    printf("\n enter column: ");
+    scanf("%d", &game->column);
     printf("\n");
 }
 
@@ -59,116 +60,40 @@ int RE_winnerCheck(gameRef game){
 }
 
 void RE_placeToken(gameRef game){
-    game->tokenColor = 1;
-    if (game->tokenColor % 2){
+    if (game->currentPlayer){
+        game->tokenPosition[game->row][game->column] = 'X';
+    }else{
+        game->tokenPosition[game->row][game->column] = 'O';
+    }
+    game->totalTokens++;
+}
+
+void RE_switchPlayer(gameRef game){
+    if(game->tokenColor % 2){
         game->currentPlayer = 1;
-        game->tokenPosition[game->y][game->x] = 'X';
     }else{
         game->currentPlayer = 0;
-        game->tokenPosition[game->y][game->x] = 'O';
     }
-    game->totalTokens = game->totalTokens + 1;
-    game->tokenColor = game->tokenColor + 1;
+    game->tokenColor++;
 }
 
 void RE_flip(gameRef game, directions direction){
     int i = 1;
+    int row = game->row;
+    int column = game->column;
+
     switch(game->currentPlayer){
-        case 0:         // X turn
-            if(direction->right){
-                while(game->tokenPosition[game->x][game->y+i] == 'X'){
-                    game->tokenPosition[game->x][game->y+i] = 'O';
-                }
-                i = 1;
-            }
-            if(direction->left){
-                while(game->tokenPosition[game->x][game->y-i] == 'O'){
-                    game->tokenPosition[game->x][game->y-i] = 'X';
-                }
-                i = 1;
-            }
-            if(direction->up){
-                while(game->tokenPosition[game->x-i][game->y] == 'O'){
-                    game->tokenPosition[game->x-i][game->y] = 'X';
-                }
-                i = 1;
-            }
-            if(direction->down){
-                while(game->tokenPosition[game->x+i][game->y] == 'O'){
-                    game->tokenPosition[game->x+i][game->y] = 'X';
-                }
-                i = 1;
-            }
-            if(direction->northEast){
-                while(game->tokenPosition[game->x-i][game->y+i] == 'O'){
-                    game->tokenPosition[game->x-i][game->y+i] = 'X';
-                }
-                i = 1;
-            }
-            if(direction->northWest){
-                while(game->tokenPosition[game->x-i][game->y-i] == 'O'){
-                    game->tokenPosition[game->x-i][game->y-i] ='X';
-                }
-                i = 1;
-            }
-            if(direction->southEast){
-                while(game->tokenPosition[game->x+i][game->y+i] == 'O'){
-                    game->tokenPosition[game->x+i][game->y+i] = 'X';
-                }
-                i = 1;
-            }
-            if(direction->southWest){
-                while(game->tokenPosition[game->x+i][game->y-i] == 'O'){
-                    game->tokenPosition[game->x+i][game->y-i] = 'X';
+        case 1:         // X turn
+            if(direction->right){   //right flip
+                while(game->tokenPosition[row][column+i] == 'O'){
+                    game->tokenPosition[row][column+i] = 'X';
                 }
             }
             break;
-        case 1:         // O turn
-            if(direction->right){
-                while(game->tokenPosition[game->x][game->y+i] == 'X'){
-                    game->tokenPosition[game->x][game->y+i] = 'O';
-                }
-                i = 1;
-            }
-            if(direction->left){
-                while(game->tokenPosition[game->x][game->y-i] == 'X'){
-                    game->tokenPosition[game->x][game->y-i] = 'O';
-                }
-                i = 1;
-            }
-            if(direction->up){
-                while(game->tokenPosition[game->x-i][game->y] == 'X'){
-                    game->tokenPosition[game->x-i][game->y] = 'O';
-                }
-                i = 1;
-            }
-            if(direction->down){
-                while(game->tokenPosition[game->x+i][game->y] == 'X'){
-                    game->tokenPosition[game->x+i][game->y] = 'O';
-                }
-                i = 1;
-            }
-            if(direction->northEast){
-                while(game->tokenPosition[game->x-i][game->y+i] == 'X'){
-                    game->tokenPosition[game->x-i][game->y+i] = 'O';
-                }
-                i = 1;
-            }
-            if(direction->northWest){
-                while(game->tokenPosition[game->x-i][game->y-i] == 'X'){
-                    game->tokenPosition[game->x-i][game->y-i] = 'O';
-                }
-                i = 1;
-            }
-            if(direction->southEast){
-                while(game->tokenPosition[game->x+i][game->y+i] == 'X'){
-                    game->tokenPosition[game->x+i][game->y+i] = 'O';
-                }
-                i = 1;
-            }
-            if(direction->southWest){
-                while(game->tokenPosition[game->x+i][game->y-i] == 'X'){
-                    game->tokenPosition[game->x+i][game->y-i] = 'O';
+        case 0:         // O turn
+            if(direction->right){   //right flip
+                while(game->tokenPosition[row][column+i] == 'X'){
+                    game->tokenPosition[row][column+i] = 'O';
                 }
             }
             break;
@@ -187,128 +112,32 @@ void RE_directionReset(directions direction){
 }
 
 int RE_validCheck(gameRef game, directions direction){
-    int i;
+    int i = 1;
+    int row = game->row;
+    int column = game->column;
+
     RE_directionReset(direction);
-    if(game->tokenPosition[game->x][game->y] != 0){
+
+    if(game->tokenPosition[row][column] != 0){
         return 0;
     }
-    if(game->currentPlayer == 0){   //X turn
-        i = 1;          //right check
-        while(game->tokenPosition[game->x][game->y+i] == 'O'){
-            i++;
-        }
-        if(game->tokenPosition[game->x][game->y+i] == 'X' && i != 1){
-            direction->right = 1;
-        }
-        i = 1;          //left check
-        while(game->tokenPosition[game->x][game->y-i] == 'O'){
-            i++;
-        }
-        if(game->tokenPosition[game->x][game->y-i] == 'X' && i != 1){
-            direction->left = 1;
-        }
-        i = 1;          //Up check
-        while(game->tokenPosition[game->x-i][game->y] == 'O'){
-            i++;
-        }
-        if(game->tokenPosition[game->x-i][game->y] == 'X' && i != 1){
-            direction->up = 1;
-        }
-        i = 1;          //Down check
-        while(game->tokenPosition[game->x+i][game->y] == 'O'){
-            i++;
-        }
-        if(game->tokenPosition[game->x+i][game->y] == 'X' && i != 1){
-            direction->down = 1;
-        }
-        i = 1;          //NorthEast check
-        while(game->tokenPosition[game->x-i][game->y+i] == 'O'){
-            i++;
-        }
-        if(game->tokenPosition[game->x-i][game->y+i] == 'X' && i != 1){
-            direction->northEast = 1;
-        }
-        i = 1;          //NorthWest check
-        while(game->tokenPosition[game->x-i][game->y-i] == 'O'){
-            i++;
-        }
-        if(game->tokenPosition[game->x-i][game->y-i] == 'X' && i != 1){
-            direction->northWest = 1;
-        }
-        i = 1;          //SouthEast check
-        while(game->tokenPosition[game->x+i][game->y+i] == 'O'){
-            i++;
-        }
-        if(game->tokenPosition[game->x+i][game->y+i] == 'X' && i != 1){
-            direction->southEast = 1;
-        }
-        i = 1;          //SouthWest check
-        while(game->tokenPosition[game->x+i][game->y-i] == 'O'){
-            i++;
-        }
-        if(game->tokenPosition[game->x+i][game->y-i] == 'X' && i != 1){
-            direction->southWest = 1;
-        }
+    switch (game->currentPlayer) {
+        case 1:         //X turn
+            while (game->tokenPosition[row][column + i] == 'O') {   //right check
+                i++;
+            }
+            if (game->tokenPosition[row][column + i] == 'X' && i > 1) {
+                direction->right = 1;
+            }
+            break;
+        case 0:         //O turn
+            while (game->tokenPosition[row][column + i] == 'X') {   //right check
+                i++;
+            }
+            if (game->tokenPosition[row][column + i] == 'O' && i > 1) {
+                direction->right = 1;
+            }
+            break;
     }
-    else if(game->currentPlayer){
-        i = 1;          //right check
-        while(game->tokenPosition[game->x][game->y+i] == 'X'){
-            i++;
-        }
-        if(game->tokenPosition[game->x][game->y+i] == 'O' && i != 1){
-            direction->right = 1;
-        }
-        i = 1;          //left check
-        while(game->tokenPosition[game->x][game->y-i] == 'X'){
-            i++;
-        }
-        if(game->tokenPosition[game->x][game->y-i] == 'O' && i != 1){
-            direction->left = 1;
-        }
-        i = 1;          //Up check
-        while(game->tokenPosition[game->x-i][game->y] == 'X'){
-            i++;
-        }
-        if(game->tokenPosition[game->x-i][game->y] == 'O' && i != 1){
-            direction->up = 1;
-        }
-        i = 1;          //Down check
-        while(game->tokenPosition[game->x+i][game->y] == 'X'){
-            i++;
-        }
-        if(game->tokenPosition[game->x+i][game->y] == 'O' && i != 1){
-            direction->down = 1;
-        }
-        i = 1;          //NorthEast check
-        while(game->tokenPosition[game->x-i][game->y+i] == 'X'){
-            i++;
-        }
-        if(game->tokenPosition[game->x-i][game->y+i] == 'O' && i != 1){
-            direction->northEast = 1;
-        }
-        i = 1;          //NorthWest check
-        while(game->tokenPosition[game->x-i][game->y-i] == 'X'){
-            i++;
-        }
-        if(game->tokenPosition[game->x-i][game->y-i] == 'O' && i != 1){
-            direction->northWest = 1;
-        }
-        i = 1;          //SouthEast check
-        while(game->tokenPosition[game->x+i][game->y+i] == 'X'){
-            i++;
-        }
-        if(game->tokenPosition[game->x+i][game->y+i] == 'O' && i != 1){
-            direction->southEast = 1;
-        }
-        i = 1;          //SouthWest check
-        while(game->tokenPosition[game->x+i][game->y-i] == 'X'){
-            i++;
-        }
-        if(game->tokenPosition[game->x+i][game->y-i] == 'O' && i != 1){
-            direction->southWest = 1;
-        }
-    }
-    int valid = direction->northWest + direction->northEast + direction->southEast + direction->southWest;
-    valid = valid + direction->up + direction->down + direction->right + direction->left;
-    return valid;
+    return direction->right;
 }
