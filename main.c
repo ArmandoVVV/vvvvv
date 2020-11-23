@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "Reversi.h"
 
 int main() {
@@ -25,6 +24,10 @@ int main() {
         printf("    %d : %d  ", game->totalTokens, game->boardSize * game->boardSize);
 
     }
-    printf("\n winner: %d", RE_winnerCheck(game));
+    if(RE_winnerCheck(game) > 0){
+        printf("\n Black wins (X)");
+    }else{
+        printf("\n White wins (O)");
+    }
     return 0;
 }
