@@ -1,20 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "Reversi.h"
+#include "raylib.h"
+
+#define BoardHeight 720
 
 void RE_startGame(gameRef game){
-    game->boardSize = 8;
+    printf("Board size: \n");
+    scanf("%d", &game->boardSize);
     int size = game->boardSize;
     game->currentPlayer = 1;
     game->userScore = 0;
     game->tokenColor = 0;
+    game->separation = BoardHeight / game->boardSize;
 
     for(int i = 0; i < size; i++){
         for(int j = 0; j < size; j++){
-            game->tokenPosition[i][j] = 0;
+            game->tokenPosition[i][j] = '0';
         }
     }
-
     game->tokenPosition[size/2-1][size/2-1] = 'O';
     game->tokenPosition[size/2][size/2] = 'O';
     game->tokenPosition[size/2-1][size/2] = 'X';
@@ -22,18 +26,62 @@ void RE_startGame(gameRef game){
     game->totalTokens = 4;
 }
 
-void RE_getCoord(gameRef game){
-    printf("\n Enter row: ");
+void RE_showBoard(gameRef game){
+    int separation = game->separation;
+    if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+        game->column = GetMouseX()/game->separation;
+        game->row = GetMouseY()/game->separation;
+    }
+
+    BeginDrawing();
+    ClearBackground(GRAY);
+    DrawRectangle(0,0,BoardHeight, BoardHeight,DARKGREEN);
+
+    for(int i = 1; i < game->boardSize;i++){
+        DrawLine(0, separation * i, BoardHeight, separation * i, BLACK);
+        DrawLine(separation * i, 0, separation * i, BoardHeight, BLACK);
+    }
+
+    for(int i = 0; i < game->boardSize; i++){
+        for(int j = 0; j < game->boardSize; j++){
+            if(game->tokenPosition[i][j] == 'X'){
+                DrawCircle(separation * ((j+1) - 0.5),separation * ((i+1) - 0.5),345/game->boardSize,BLACK);
+            }
+            else if(game->tokenPosition[i][j] == 'O'){
+                DrawCircle(separation * ((j+1) - 0.5),separation * ((i+1) - 0.5),345/game->boardSize,WHITE);
+            }
+        }
+    }
+
+    if(game->currentPlayer){
+        DrawText("BLACK", 830, 600, 100, BLACK );
+    }
+    else{
+        DrawText("WHITE", 830, 600, 100, BLACK);
+    }
+
+
+EndDrawing();
+}
+
+int RE_getCoord(gameRef game){
+    if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
+        game->column = GetMouseX()/game->separation;
+        game->row = GetMouseY()/game->separation;
+        return 1;
+    }
+    /*printf("\n Enter row: ");
     scanf("%d", &game->row);
     printf("\n enter column: ");
     scanf("%d", &game->column);
-    printf("\n");
+    printf("\n");*/
+    return 0;
 }
 
-void RE_showBoard(gameRef game){
-    for(int i = 0;i < game->boardSize;i++){
+/*void RE_showBoard_CMD(gameRef game){
+    for(int i = 0;i < 8;i++){
         printf("\n");
-        for(int j = 0;j < game->boardSize;j++) {
+        for(int j = 0;j < 8;j++) {
             if(game->tokenPosition[i][j]) {
                 printf(" %c ", game->tokenPosition[i][j]);
             }else{
@@ -41,7 +89,7 @@ void RE_showBoard(gameRef game){
             }
         }
     }
-}
+}*/
 
 int RE_winnerCheck(gameRef game){
     int blackTokens = 0;
@@ -60,12 +108,14 @@ int RE_winnerCheck(gameRef game){
 }
 
 void RE_placeToken(gameRef game){
+    BeginDrawing();
     if (game->currentPlayer){
         game->tokenPosition[game->row][game->column] = 'X';
     }else{
         game->tokenPosition[game->row][game->column] = 'O';
     }
     game->totalTokens++;
+    EndDrawing();
 }
 
 void RE_switchPlayer(gameRef game){
@@ -87,6 +137,7 @@ void RE_flip(gameRef game, directions direction){
             if(direction->right){   //right flip
                 while(game->tokenPosition[row][column+i] == 'O'){
                     game->tokenPosition[row][column+i] = 'X';
+                    DrawCircle(game->column * game->separation + game->separation * i, game->row * game->separation,350/game->boardSize, BLACK);
                     i++;
                 }
                 i = 1;
@@ -219,7 +270,7 @@ int RE_validCheck(gameRef game, directions direction){
 
     RE_directionReset(direction);
 
-    if(game->tokenPosition[row][column] != 0){
+    if(game->tokenPosition[row][column] == 'O' || game->tokenPosition[row][column] == 'X'){
         return 0;
     }
     switch (game->currentPlayer) {
