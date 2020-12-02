@@ -3,6 +3,8 @@
 #include "Reversi.h"
 #include "raylib.h"
 
+
+
 #define WindowWidth 1280
 #define WindowHeight 720
 
@@ -17,35 +19,43 @@ int main() {
     SetTargetFPS(60);
 
 
-    while(game->totalTokens < game->boardSize * game->boardSize && !WindowShouldClose()) {
+    while(game->totalTokens < game->boardSize * game->boardSize  && !WindowShouldClose()) {
         RE_showBoard(game);
-        //RE_showBoard_CMD(game);
-        int userClick = RE_getCoord(game);
 
-        if (userClick) {
-            userClick = 0;
-            printf("usuario selecciono %d %d\n", game->row, game->column);
+        RE_availableMove(game, direction);
+        RE_getScore(game);
 
-            if(RE_validCheck(game, direction)){
-                RE_placeToken(game);
-                RE_flip(game, direction);
-                RE_switchPlayer(game);
-            }else{
-                printf("El movimiento fue falso\n");
+        if (game->availableMove ){
+            if (RE_getCoord(game)) {
+                printf("usuario selecciono %d %d\n", game->row, game->column);
+                if (RE_validCheck(game, direction, game->row, game->column)) {
+                    RE_placeToken(game);
+                    RE_flip(game, direction);
+                    RE_switchPlayer(game);
+                } else {
+                    printf("El movimiento fue falso\n");
 
+                }
+            }
+        }else{
+            RE_switchPlayer(game);
+            RE_availableMove(game, direction);
+            printf("Cambio de turno por falta de movimientos\n");
+            if(!game->availableMove){
+                game->gameEarlyClosed = 1;
+                RE_showBoard(game);
+                for (int i = 0; i < 10; i++) {
+                    delay(3);
+                }
+                CloseWindow();
+                return 0;
             }
         }
-        /*if(game->currentPlayer){
-            printf("X turn   ");
-        }else{
-            printf("O turn   ");
-        }
-        printf("    %d : %d  ", game->totalTokens, game->boardSize * game->boardSize);
     }
-    if(RE_winnerCheck(game) > 0){
-        printf("\n Black wins (X)");
-    }else{
-        printf("\n White wins (O)");*/
+
+    RE_showBoard(game);
+    for (int i = 0; i < 10; i++) {
+        delay(5);
     }
     CloseWindow();
     return 0;

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "Reversi.h"
 #include "raylib.h"
+#include <time.h>
 
 #define BoardHeight 720
 
@@ -10,9 +11,13 @@ void RE_startGame(gameRef game){
     scanf("%d", &game->boardSize);
     int size = game->boardSize;
     game->currentPlayer = 1;
-    game->userScore = 0;
     game->tokenColor = 0;
+    game->whiteTokens = 0;
+    game->blackTokens = 0;
+    game->gameEarlyClosed = 0;
     game->separation = BoardHeight / game->boardSize;
+
+
 
     for(int i = 0; i < size; i++){
         for(int j = 0; j < size; j++){
@@ -28,6 +33,7 @@ void RE_startGame(gameRef game){
 
 void RE_showBoard(gameRef game){
     int separation = game->separation;
+
     if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
         game->column = GetMouseX()/game->separation;
         game->row = GetMouseY()/game->separation;
@@ -58,6 +64,32 @@ void RE_showBoard(gameRef game){
     }
     else{
         DrawText("WHITE", 830, 600, 100, BLACK);
+    }
+
+    DrawText(TextFormat("White Tokens: %02i", game->whiteTokens), 730, 60, 20, BLACK);
+    DrawText(TextFormat("Black Tokens: %02i", game->blackTokens), 730, 20, 20, BLACK);
+
+    if(RE_winnerCheck(game) > 0 && game->totalTokens == game->boardSize * game->boardSize){
+        DrawText(TextFormat("BLACK WINS"), 730, 100, 30, GOLD);
+    }
+    else if(RE_winnerCheck(game) < 0 && game->totalTokens == game->boardSize * game->boardSize) {
+        DrawText(TextFormat("WHITE WINS"), 730, 100, 30, GOLD);
+    }
+    else if(RE_winnerCheck(game) == 0 && game->totalTokens == game->boardSize * game->boardSize){
+        DrawText(TextFormat("DRAW"), 730, 100, 30, GOLD);
+    }
+
+    if(game->gameEarlyClosed){
+        DrawText(TextFormat("NO MORE MOVES POSSIBLE"), 730, 150, 20, BLACK);
+        if(RE_winnerCheck(game) > 0){
+            DrawText(TextFormat("BLACK WINS"), 730, 100, 30, GOLD);
+        }
+        else if(RE_winnerCheck(game) < 0){
+            DrawText(TextFormat("WHITE WINS"), 730, 100, 30, GOLD);
+        }
+        else{
+            DrawText(TextFormat("DRAW"), 730, 100, 30, GOLD);
+        }
     }
 
 
@@ -92,19 +124,7 @@ int RE_getCoord(gameRef game){
 }*/
 
 int RE_winnerCheck(gameRef game){
-    int blackTokens = 0;
-    int whiteTokens = 0;
-    for(int i = 0; i < game->boardSize; i++){
-        for(int j = 0; j < game->boardSize; j++){
-            if(game->tokenPosition[i][j] == 'O'){
-                whiteTokens++;
-                }
-            else if(game->tokenPosition[i][j] == 'X'){
-                blackTokens++;
-            }
-        }
-    }
-    return blackTokens - whiteTokens;
+    return game->blackTokens - game->whiteTokens;
 }
 
 void RE_placeToken(gameRef game){
@@ -137,7 +157,6 @@ void RE_flip(gameRef game, directions direction){
             if(direction->right){   //right flip
                 while(game->tokenPosition[row][column+i] == 'O'){
                     game->tokenPosition[row][column+i] = 'X';
-                    DrawCircle(game->column * game->separation + game->separation * i, game->row * game->separation,350/game->boardSize, BLACK);
                     i++;
                 }
                 i = 1;
@@ -262,10 +281,8 @@ void RE_directionReset(directions direction){
     direction->up = 0;
 }
 
-int RE_validCheck(gameRef game, directions direction){
+int RE_validCheck(gameRef game, directions direction, int row, int column){
     int i = 1;
-    int row = game->row;
-    int column = game->column;
     int valid;
 
     RE_directionReset(direction);
@@ -392,4 +409,37 @@ int RE_validCheck(gameRef game, directions direction){
     valid += direction->northEast + direction->northWest + direction->southEast + direction->southWest;
 
     return valid;
+}
+
+void RE_availableMove(gameRef game, directions direction) {
+    game->availableMove = 0;
+    for (int i = 0; i < game->boardSize; i++) {
+        for (int j = 0; j < game->boardSize; j++) {
+            if(RE_validCheck(game, direction, i, j)){
+                game->availableMove = 1;
+            }
+        }
+    }
+}
+
+void RE_getScore(gameRef game){
+    game->blackTokens = 0;
+    game->whiteTokens = 0;
+    for (int i = 0; i < game->boardSize; i++) {
+        for (int j = 0; j < game->boardSize; j++) {
+            switch(game->tokenPosition[i][j]){
+                case 'X':
+                    game->blackTokens++;
+                    break;
+                case 'O':
+                    game->whiteTokens++;
+            }
+        }
+    }
+}
+
+void delay(int number_of_seconds){
+    int milli_seconds = 100 * number_of_seconds;
+    clock_t start_time = clock();
+    while (clock() < start_time + milli_seconds);
 }
