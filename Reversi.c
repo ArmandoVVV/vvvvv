@@ -100,6 +100,9 @@ int RE_getCoord(gameRef game){
     if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
         game->column = GetMouseX()/game->separation;
         game->row = GetMouseY()/game->separation;
+        if (game->column >= game->boardSize || game->row >= game->boardSize){
+            return 0;
+        }
         return 1;
     }
     /*printf("\n Enter row: ");
@@ -287,9 +290,11 @@ int RE_validCheck(gameRef game, directions direction, int row, int column){
 
     RE_directionReset(direction);
 
-    if(game->tokenPosition[row][column] == 'O' || game->tokenPosition[row][column] == 'X'){
+    if(game->tokenPosition[row][column] == 'O' || game->tokenPosition[row][column] == 'X'){ //position already used
         return 0;
     }
+
+
     switch (game->currentPlayer) {
         case 1:         //X turn
             while (game->tokenPosition[row][column + i] == 'O') {   //right check
