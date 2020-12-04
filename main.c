@@ -52,7 +52,7 @@ int main() {
             }
         }
     }
-
+    RE_getScore(game);
     RE_showBoard(game);
     for (int i = 0; i < 10; i++) {
         delay(5);
