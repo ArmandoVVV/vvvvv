@@ -4,7 +4,6 @@
 #include "raylib.h"
 
 
-
 #define WindowWidth 1280
 #define WindowHeight 720
 
@@ -20,13 +19,15 @@ int main() {
 
 
     while(game->totalTokens < game->boardSize * game->boardSize  && !WindowShouldClose()) {
-        RE_showBoard(game);
-
-        RE_availableMove(game, direction);
         RE_getScore(game);
+        RE_showBoard(game);
+        RE_availableMove(game, direction);
 
         if (game->availableMove ){
-            if (RE_getCoord(game)) {
+            if (RE_getCoord(game, direction)) {
+                if(game->CPU && !game->currentPlayer){
+                    delay(25);
+                }
                 printf("usuario selecciono %d %d\n", game->row, game->column);
                 if (RE_validCheck(game, direction, game->row, game->column)) {
                     RE_placeToken(game);
@@ -44,9 +45,7 @@ int main() {
             if(!game->availableMove){
                 game->gameEarlyClosed = 1;
                 RE_showBoard(game);
-                for (int i = 0; i < 10; i++) {
-                    delay(3);
-                }
+                delay(50);
                 CloseWindow();
                 return 0;
             }
@@ -54,9 +53,9 @@ int main() {
     }
     RE_getScore(game);
     RE_showBoard(game);
-    for (int i = 0; i < 10; i++) {
-        delay(5);
-    }
+
+    delay(50);
+
     CloseWindow();
     return 0;
 }

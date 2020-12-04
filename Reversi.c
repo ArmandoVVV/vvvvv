@@ -1,14 +1,24 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include "Reversi.h"
 #include "raylib.h"
 #include <time.h>
 
+
 #define BoardHeight 720
+#define MaxBoardSize 20
+#define MinBoardSize 3
 
 void RE_startGame(gameRef game){
+
     printf("Board size: \n");
     scanf("%d", &game->boardSize);
+    while(game->boardSize > MaxBoardSize || game->boardSize < MinBoardSize){
+        printf("Invalid size   range[3,20] \n");
+        printf("Board size: \n");
+        scanf("%d", &game->boardSize);
+    }
+    printf("Play against CPU? \n [1] Yes \n [0] No\n");
+    scanf("%d", &game->CPU);
     int size = game->boardSize;
     game->currentPlayer = 1;
     game->tokenColor = 0;
@@ -96,7 +106,19 @@ void RE_showBoard(gameRef game){
 EndDrawing();
 }
 
-int RE_getCoord(gameRef game){
+int RE_getCoord(gameRef game, directions direction){
+    if(!game->currentPlayer && game->CPU){                     //Playing against CPU
+        for (int i = 0; i < game->boardSize; i++) {
+            for (int j = 0; j < game->boardSize; j++) {
+                if(RE_validCheck(game, direction, i, j)){
+                    game->row = i;
+                    game->column = j;
+                    return 1;
+                }
+            }
+        }
+    }
+
     if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
         game->column = GetMouseX()/game->separation;
         game->row = GetMouseY()/game->separation;
@@ -131,14 +153,12 @@ int RE_winnerCheck(gameRef game){
 }
 
 void RE_placeToken(gameRef game){
-    BeginDrawing();
     if (game->currentPlayer){
         game->tokenPosition[game->row][game->column] = 'X';
     }else{
         game->tokenPosition[game->row][game->column] = 'O';
     }
     game->totalTokens++;
-    EndDrawing();
 }
 
 void RE_switchPlayer(gameRef game){
@@ -156,7 +176,7 @@ void RE_flip(gameRef game, directions direction){
     int column = game->column;
 
     switch(game->currentPlayer){
-        case 1:         // X turn
+        case 1:         // Black turn
             if(direction->right){   //right flip
                 while(game->tokenPosition[row][column+i] == 'O'){
                     game->tokenPosition[row][column+i] = 'X';
@@ -213,7 +233,7 @@ void RE_flip(gameRef game, directions direction){
                 }
             }
             break;
-        case 0:         // O turn
+        case 0:         // White turn
             if(direction->right){   //right flip
                 while(game->tokenPosition[row][column+i] == 'X'){
                     game->tokenPosition[row][column+i] = 'O';
@@ -296,7 +316,7 @@ int RE_validCheck(gameRef game, directions direction, int row, int column){
 
 
     switch (game->currentPlayer) {
-        case 1:         //X turn
+        case 1:         //Black turn
             while (game->tokenPosition[row][column + i] == 'O') {   //right check
                 i++;
             }
@@ -352,7 +372,7 @@ int RE_validCheck(gameRef game, directions direction, int row, int column){
                 direction->southWest = 1;
             }
             break;
-        case 0:         //O turn
+        case 0:         //White turn
             while (game->tokenPosition[row][column + i] == 'X') {   //right check
                 i++;
             }
@@ -447,4 +467,46 @@ void delay(int number_of_seconds){
     int milli_seconds = 100 * number_of_seconds;
     clock_t start_time = clock();
     while (clock() < start_time + milli_seconds);
+}
+
+void RE_saveGame(gameRef game){
+    FILE* file = fopen("gamesaved.txt","a");
+    fprintf(file, "%d\n",game->currentPlayer );
+    fprintf(file, "%d\n",game->boardSize );
+    fprintf(file, "%d",game->totalTokens );
+    for(int i = 0; i < game->boardSize; i++){
+        fputs("\n",file);
+        for(int j = 0; j < game->boardSize; j++){
+            if(game->tokenPosition[i][j]=='O'){
+                fputs("O",file);
+            }else if(game->tokenPosition[i][j]=='X'){
+                fputs("X",file);
+            }
+            else{
+                fputs("0",file);
+            }
+        }
+    }
+    fputs("\n\n",file);
+    fclose(file);
+}
+
+void RE_resumeGame(gameRef game){
+    FILE* file = fopen("gamesaved.txt","r");
+    fscanf(file, "%d\n %d\n %d\n", &game->currentPlayer, &game->boardSize, &game->totalTokens);
+    for(int i = 0; i < game->boardSize; i++){
+        for(int j = 0; j < game->boardSize; j++){
+            char temp = fgetc(file);
+            if(temp=='0'){
+                game->tokenPosition[i][j] = 0;
+            }else if((temp=='O')){
+                game->tokenPosition[i][j]='O';
+            }else if((temp=='X')){
+                game->tokenPosition[i][j]='X';
+            }else if((temp=='\n')){
+                j--;
+            }
+        }
+    }
+    fclose(file);
 }
